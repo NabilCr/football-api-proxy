@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: football-api-proxy
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: RAPIDAPI_KEY
+        sync: false          # You will set this manually in Render dashboard
+      - key: RAPIDAPI_HOST
+        value: football-api-7.p.rapidapi.com
+      - key: RAPIDAPI_BASE_URL
+        value: https://football-api-7.p.rapidapi.com/api
+      - key: POSTS_BASE_URL
+        value: https://footballapi7.codechno.com/api
