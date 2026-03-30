@@ -29,7 +29,6 @@ app.add_middleware(
 
 async def proxy(path: str, params: dict, ttl: int, base_url: str = RAPIDAPI_BASE_URL, headers: dict = RAPIDAPI_HEADERS):
     """Fetch from upstream with caching. Returns parsed JSON."""
-    # Remove None values so they don't appear in the URL
     clean_params = {k: v for k, v in params.items() if v is not None}
     cache_key = path + str(sorted(clean_params.items()))
 
@@ -49,9 +48,9 @@ async def proxy(path: str, params: dict, ttl: int, base_url: str = RAPIDAPI_BASE
     return data
 
 
-# ─── Routes ───────────────────────────────────────────────────────────────────
+# ─── Routes (paths match Flutter app exactly) ─────────────────────────────────
 
-@app.get("/matches")
+@app.get("/v3/matches")
 async def matches(
     date: Optional[str] = None,
     lang: Optional[str] = None,
@@ -62,18 +61,18 @@ async def matches(
     return await proxy("/v3/matches", {"date": date, "lang": lang, "theme": theme, "time": time}, TTL_LIVE)
 
 
-@app.get("/match/details")
+@app.get("/v3/match/details")
 async def match_details(
     id: str = Query(...),
     lang: Optional[str] = None,
     time: Optional[str] = None,
     theme: Optional[str] = None,
 ):
-    """Match details & events. Cached 60 seconds (live updates)."""
+    """Match details & events. Cached 60 seconds."""
     return await proxy("/v3/match/details", {"id": id, "lang": lang, "time": time, "theme": theme}, TTL_LIVE)
 
 
-@app.get("/standings/league")
+@app.get("/v2/league/standing")
 async def league_standing(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -89,7 +88,7 @@ async def league_standing(
     )
 
 
-@app.get("/standings/team")
+@app.get("/v2/team/standing")
 async def team_standing(
     id: str = Query(...),
     league: Optional[str] = None,
@@ -105,7 +104,7 @@ async def team_standing(
     )
 
 
-@app.get("/player")
+@app.get("/v2/player")
 async def player(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -116,7 +115,7 @@ async def player(
     return await proxy("/v2/player", {"id": id, "lang": lang, "theme": theme, "time": time}, TTL_DAY)
 
 
-@app.get("/statistics")
+@app.get("/v2/stats")
 async def statistics(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -125,13 +124,13 @@ async def statistics(
     return await proxy("/v2/stats", {"id": id, "lang": lang}, TTL_MEDIUM)
 
 
-@app.get("/countries")
+@app.get("/v2/competitions/countries")
 async def countries(lang: Optional[str] = None):
     """Countries & competitions list. Cached 24 hours."""
     return await proxy("/v2/competitions/countries", {"lang": lang}, TTL_DAY)
 
 
-@app.get("/h2h")
+@app.get("/v2/h2h")
 async def h2h(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -142,7 +141,7 @@ async def h2h(
     return await proxy("/v2/h2h", {"id": id, "lang": lang, "theme": theme, "time": time}, TTL_LONG)
 
 
-@app.get("/highlights")
+@app.get("/v3/highlights")
 async def highlights(
     id: Optional[str] = "167,7,11",
     lang: Optional[str] = None,
@@ -156,16 +155,7 @@ async def highlights(
     )
 
 
-@app.get("/posts")
-async def posts(
-    lang: Optional[str] = None,
-    page: Optional[int] = None,
-):
-    """Football news/posts. Cached 30 minutes."""
-    return await proxy("/news", {"lang": lang, "page": page}, TTL_MEDIUM, base_url=POSTS_BASE_URL, headers={})
-
-
-@app.get("/matches/league")
+@app.get("/v3/matches/league")
 async def matches_league(
     id: str = Query(...),
     page: Optional[str] = None,
@@ -181,7 +171,7 @@ async def matches_league(
     )
 
 
-@app.get("/matches/team")
+@app.get("/v3/matches/team")
 async def matches_team(
     id: str = Query(...),
     page: Optional[str] = None,
@@ -198,7 +188,7 @@ async def matches_team(
     )
 
 
-@app.get("/squads")
+@app.get("/v2/squads")
 async def squads(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -208,7 +198,7 @@ async def squads(
     return await proxy("/v2/squads", {"id": id, "lang": lang, "theme": theme}, TTL_DAY)
 
 
-@app.get("/search")
+@app.get("/v3/search")
 async def search(
     query: str = Query(...),
     filter: Optional[str] = None,
@@ -218,7 +208,7 @@ async def search(
     return await proxy("/v3/search", {"query": query, "filter": filter, "theme": theme}, TTL_SHORT)
 
 
-@app.get("/top-stats")
+@app.get("/v2/top-stats")
 async def top_stats(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -234,7 +224,7 @@ async def top_stats(
     )
 
 
-@app.get("/transfers")
+@app.get("/v2/transfers")
 async def transfers(
     id: str = Query(...),
     lang: Optional[str] = None,
@@ -243,7 +233,7 @@ async def transfers(
     return await proxy("/v2/transfers", {"id": id, "lang": lang}, TTL_LONG)
 
 
-@app.get("/winners")
+@app.get("/v2/winners")
 async def winners(
     id: str = Query(...),
     lang: Optional[str] = None,
